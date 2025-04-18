@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Parallel represents a parallel axis.
@@ -12,7 +12,7 @@ type Parallel struct {
 }
 
 // Type returns the chart type.
-func (Parallel) Type() string { return types.ChartParallel }
+func (*Parallel) Type() string { return types.ChartParallel }
 
 // NewParallel creates a new parallel instance.
 func NewParallel() *Parallel {
@@ -26,7 +26,7 @@ func NewParallel() *Parallel {
 // AddSeries adds new data sets.
 func (c *Parallel) AddSeries(name string, data []opts.ParallelData, options ...SeriesOpts) *Parallel {
 	series := SingleSeries{Name: name, Type: types.ChartParallel, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -37,7 +37,7 @@ func (c *Parallel) SetGlobalOptions(options ...GlobalOpts) *Parallel {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Parallel) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

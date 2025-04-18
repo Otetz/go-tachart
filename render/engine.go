@@ -1,96 +1,56 @@
 package render
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"io"
 	"regexp"
+	"strings"
 
-	tpls "github.com/iamjinlei/go-tachart/templates"
+	"github.com/otetz/go-tachart/types"
 )
+
+const (
+	ModChart = "chart"
+	ModPage  = "page"
+	// EchartsInstancePrefix the default prefix for each echarts instance
+	EchartsInstancePrefix = "goecharts_"
+	// EchartsInstancePlaceholder a placeholder for types.FuncStr inject echarts instance
+	EchartsInstancePlaceholder = "%MY_ECHARTS%"
+)
+
+var pat = regexp.MustCompile(`(__f__")|("__f__)|(__f__)`)
+
+type ChartSnippet struct {
+	Element string
+	Script  string
+	Option  string
+}
 
 // Renderer
 // Any kinds of charts have their render implementation and
 // you can define your own render logic easily.
 type Renderer interface {
 	Render(w io.Writer) error
+	RenderContent() []byte
+	RenderSnippet() ChartSnippet
 }
 
-const (
-	ModChart = "chart"
-	ModPage  = "page"
-)
-
-type pageRender struct {
-	c      interface{}
-	before []func()
-}
-
-// NewPageRender returns a render implementation for Page.
-func NewPageRender(c interface{}, before ...func()) Renderer {
-	return &pageRender{c: c, before: before}
-}
-
-// Render
-func (r *pageRender) Render(w io.Writer) error {
-	for _, fn := range r.before {
-		fn()
-	}
-
-	contents := []string{tpls.HeaderTpl, tpls.BaseTpl, tpls.PageTpl}
-	tpl := MustTemplate(ModPage, contents)
-
-	var buf bytes.Buffer
-	if err := tpl.ExecuteTemplate(&buf, ModPage, r.c); err != nil {
-		return err
-	}
-
-	pat := regexp.MustCompile(`(__f__")|("__f__)|(__f__)`)
-	content := pat.ReplaceAll(buf.Bytes(), []byte(""))
-
-	_, err := w.Write(content)
-	return err
-}
-
-type chartRender struct {
-	c      interface{}
-	before []func()
-}
-
-// NewChartRender returns a render implementation for Chart.
-func NewChartRender(c interface{}, before ...func()) Renderer {
-	return &chartRender{c: c, before: before}
-}
-
-// Render
-func (r *chartRender) Render(w io.Writer) error {
-	for _, fn := range r.before {
-		fn()
-	}
-
-	contents := []string{tpls.HeaderTpl, tpls.BaseTpl, tpls.ChartTpl}
-	tpl := MustTemplate(ModChart, contents)
-
-	var buf bytes.Buffer
-	if err := tpl.ExecuteTemplate(&buf, ModChart, r.c); err != nil {
-		return err
-	}
-
-	pat := regexp.MustCompile(`(__f__")|("__f__)|(__f__)`)
-	content := pat.ReplaceAll(buf.Bytes(), []byte(""))
-
-	_, err := w.Write(content)
-	return err
-}
-
-// MustTemplate
+// MustTemplate creates a new template with the given name and parsed contents.
 func MustTemplate(name string, contents []string) *template.Template {
-	tpl := template.Must(template.New(name).Parse(contents[0])).Funcs(template.FuncMap{
+	tpl := template.New(name).Funcs(template.FuncMap{
+		"safeHTML": func(s interface{}) template.HTML {
+			return template.HTML(fmt.Sprint(s))
+		},
 		"safeJS": func(s interface{}) template.JS {
 			return template.JS(fmt.Sprint(s))
 		},
+		"injectInstance": func(funcStr types.FuncStr, echartsInstancePlaceholder string, chartID string) string {
+			instance := EchartsInstancePrefix + chartID
+			return strings.Replace(string(funcStr), echartsInstancePlaceholder, instance, -1)
+		},
 	})
+	tpl = template.Must(tpl.Parse(contents[0]))
 
 	for _, cont := range contents[1:] {
 		tpl = template.Must(tpl.Parse(cont))

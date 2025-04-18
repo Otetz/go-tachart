@@ -1,18 +1,21 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Radar represents a radar chart.
 type Radar struct {
 	BaseConfiguration
+
+	// SymbolKeepAspect is whether to keep aspect for symbols in the form of path://.
+	SymbolKeepAspect types.Bool
 }
 
 // Type returns the chart type.
-func (Radar) Type() string { return types.ChartRadar }
+func (*Radar) Type() string { return types.ChartRadar }
 
 // NewRadar creates a new radar chart.
 func NewRadar() *Radar {
@@ -25,8 +28,8 @@ func NewRadar() *Radar {
 
 // AddSeries adds new data sets.
 func (c *Radar) AddSeries(name string, data []opts.RadarData, options ...SeriesOpts) *Radar {
-	series := SingleSeries{Name: name, Type: types.ChartRadar, Data: data}
-	series.configureSeriesOpts(options...)
+	series := SingleSeries{Name: name, Type: types.ChartRadar, Data: data, SymbolKeepAspect: c.SymbolKeepAspect}
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	c.legends = append(c.legends, name)
 	return c
@@ -38,7 +41,7 @@ func (c *Radar) SetGlobalOptions(options ...GlobalOpts) *Radar {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Radar) Validate() {
 	c.Legend.Data = c.legends
 	c.Assets.Validate(c.AssetsHost)

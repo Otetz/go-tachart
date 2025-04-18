@@ -27,6 +27,6 @@ func TestBarDefaultValue(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "900px", bar.Initialization.Width)
 	assert.Equal(t, "500px", bar.Initialization.Height)
-	assert.Equal(t, "Awesome go-tachart", bar.PageTitle)
+	assert.Equal(t, "Awesome go-echarts", bar.PageTitle)
 	assert.Equal(t, host, bar.AssetsHost)
 }

@@ -6,8 +6,8 @@ import (
 
 	"github.com/iamjinlei/go-tart"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type macd struct {
@@ -50,7 +50,7 @@ func (c macd) getNumColors() int {
 func (c *macd) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	c.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[c.ci],
 				FontSize: chartLabelFontSize,
@@ -59,7 +59,7 @@ func (c *macd) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 			Left:  px(left),
 			Top:   px(top),
 		},
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[c.ci+1],
 				FontSize: chartLabelFontSize,
@@ -85,7 +85,6 @@ func (c macd) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridInde
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[c.ci],
@@ -104,7 +103,6 @@ func (c macd) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridInde
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[c.ci+1],
@@ -132,7 +130,6 @@ func (c macd) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridInde
 			BarWidth:   "60%",
 			XAxisIndex: gridIndex,
 			YAxisIndex: gridIndex,
-			ZLevel:     100,
 		}))
 
 	macdLine.Overlap(signalLine, histBar)

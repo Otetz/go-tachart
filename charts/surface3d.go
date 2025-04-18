@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Surface3D represents a 3D surface chart.
@@ -12,7 +12,7 @@ type Surface3D struct {
 }
 
 // Type returns the chart type.
-func (Surface3D) Type() string { return types.ChartSurface3D }
+func (*Surface3D) Type() string { return types.ChartSurface3D }
 
 // NewSurface3D creates a new 3d surface chart.
 func NewSurface3D() *Surface3D {

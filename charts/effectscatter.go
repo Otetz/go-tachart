@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // EffectScatter represents an effect scatter chart.
@@ -12,7 +12,7 @@ type EffectScatter struct {
 }
 
 // Type returns the chart type.
-func (EffectScatter) Type() string { return types.ChartEffectScatter }
+func (*EffectScatter) Type() string { return types.ChartEffectScatter }
 
 // NewEffectScatter creates a new effect scatter chart.
 func NewEffectScatter() *EffectScatter {
@@ -32,7 +32,7 @@ func (c *EffectScatter) SetXAxis(x interface{}) *EffectScatter {
 // AddSeries adds the Y axis.
 func (c *EffectScatter) AddSeries(name string, data []opts.EffectScatterData, options ...SeriesOpts) *EffectScatter {
 	series := SingleSeries{Name: name, Type: types.ChartEffectScatter, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }

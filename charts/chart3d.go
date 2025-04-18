@@ -1,8 +1,8 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Chart3D is a chart in 3D coordinates.
@@ -10,28 +10,28 @@ type Chart3D struct {
 	BaseConfiguration
 }
 
-// WithXAxis3DOpts
+// WithXAxis3DOpts sets the X axis of the Chart3D instance.
 func WithXAxis3DOpts(opt opts.XAxis3D) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.XAxis3D = opt
 	}
 }
 
-// WithYAxis3DOpts
+// WithYAxis3DOpts sets the Y axis of the Chart3D instance.
 func WithYAxis3DOpts(opt opts.YAxis3D) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.YAxis3D = opt
 	}
 }
 
-// WithZAxis3DOpts
+// WithZAxis3DOpts sets the Z axis of the Chart3D instance.
 func WithZAxis3DOpts(opt opts.ZAxis3D) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.ZAxis3D = opt
 	}
 }
 
-// WithGrid3DOpts
+// WithGrid3DOpts sets the grid of the Chart3D instance.
 func WithGrid3DOpts(opt opts.Grid3D) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Grid3D = opt
@@ -39,6 +39,7 @@ func WithGrid3DOpts(opt opts.Grid3D) GlobalOpts {
 }
 
 func (c *Chart3D) initChart3D() {
+	c.JSAssets.Add(opts.CompatibleEchartsJS)
 	c.JSAssets.Add("echarts-gl.min.js")
 	c.has3DAxis = true
 }
@@ -50,7 +51,7 @@ func (c *Chart3D) addSeries(chartType, name string, data []opts.Chart3DData, opt
 		Data:        data,
 		CoordSystem: types.ChartCartesian3D,
 	}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 }
 
@@ -60,7 +61,7 @@ func (c *Chart3D) SetGlobalOptions(options ...GlobalOpts) *Chart3D {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Chart3D) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Scatter represents a scatter chart.
@@ -12,7 +12,7 @@ type Scatter struct {
 }
 
 // Type returns the chart type.
-func (Scatter) Type() string { return types.ChartScatter }
+func (*Scatter) Type() string { return types.ChartScatter }
 
 // NewScatter creates a new scatter chart.
 func NewScatter() *Scatter {
@@ -32,7 +32,7 @@ func (c *Scatter) SetXAxis(x interface{}) *Scatter {
 // AddSeries adds the new series.
 func (c *Scatter) AddSeries(name string, data []opts.ScatterData, options ...SeriesOpts) *Scatter {
 	series := SingleSeries{Name: name, Type: types.ChartScatter, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }

@@ -1,11 +1,11 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type Overlaper interface {
-	overlap() MultiSeries
+	asRectChart() *RectChart
 }
 
 // XYAxis represent the X and Y axis in the rectangular coordinates.
@@ -29,7 +29,7 @@ func (xy *XYAxis) ExtendYAxis(yAxis ...opts.YAxis) {
 	xy.YAxisList = append(xy.YAxisList, yAxis...)
 }
 
-// WithXAxisOpts
+// WithXAxisOpts sets the X axis.
 func WithXAxisOpts(opt opts.XAxis, index ...int) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		if len(index) == 0 {
@@ -41,7 +41,7 @@ func WithXAxisOpts(opt opts.XAxis, index ...int) GlobalOpts {
 	}
 }
 
-// WithYAxisOpts
+// WithYAxisOpts sets the Y axis.
 func WithYAxisOpts(opt opts.YAxis, index ...int) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		if len(index) == 0 {
@@ -69,8 +69,16 @@ type RectChart struct {
 	xAxisData interface{}
 }
 
-func (rc *RectChart) overlap() MultiSeries {
-	return rc.MultiSeries
+func (rc *RectChart) asRectChart() *RectChart {
+	return rc
+}
+
+// The default RectAggregator for the series data merge
+func (rc *RectChart) overlap() RectAggregator {
+	return func(this *RectChart, that *RectChart) *RectChart {
+		this.MultiSeries = append(this.MultiSeries, that.MultiSeries...)
+		return this
+	}
 }
 
 // SetGlobalOptions sets options for the RectChart instance.
@@ -79,22 +87,34 @@ func (rc *RectChart) SetGlobalOptions(options ...GlobalOpts) *RectChart {
 	return rc
 }
 
-// Overlap composes multiple charts into one single canvas.
+// Overlap composes multiple charts' Series data into one single canvas.
 // It is only suited for some of the charts which are in rectangular coordinate.
-// Supported charts: Bar/BoxPlot/Line/Scatter/EffectScatter/Kline/HeatMap
+// Supported charts: Bar/BoxPlot/Line/Scatter/EffectScatter/Kline/HeatMap/Custom
 func (rc *RectChart) Overlap(a ...Overlaper) {
-	for i := 0; i < len(a); i++ {
-		rc.MultiSeries = append(rc.MultiSeries, a[i].overlap()...)
+	rc.Aggregate(rc.overlap(), a...)
+}
+
+// RectAggregator is a binary operator for the RectChart merge function
+type RectAggregator func(this *RectChart, that *RectChart) *RectChart
+
+// Aggregate aggregation multiple rect charts into one single canvas.
+// An aggregator will merge all charts in orders into the final one.
+// It is only suited for some of the charts which are in rectangular coordinate.
+func (rc *RectChart) Aggregate(aggregator RectAggregator, charts ...Overlaper) {
+	identity := rc
+	for _, o := range charts {
+		c := o.asRectChart()
+		identity = aggregator(identity, c)
 	}
 }
 
-// Validate
+// Validate validates the given configuration.
 func (rc *RectChart) Validate() {
 	// Make sure that the data of X axis won't be cleaned for XAxisOpts
 	rc.XAxisList[0].Data = rc.xAxisData
 	// Make sure that the labels of Y axis show correctly
 	for i := 0; i < len(rc.YAxisList); i++ {
-		rc.YAxisList[i].AxisLabel.Show = true
+		rc.YAxisList[i].AxisLabel.Show = opts.Bool(true)
 	}
 	rc.Assets.Validate(rc.AssetsHost)
 }

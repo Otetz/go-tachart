@@ -6,8 +6,8 @@ import (
 
 	"github.com/iamjinlei/go-tart"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type rsi struct {
@@ -50,7 +50,7 @@ func (r rsi) getNumColors() int {
 func (r *rsi) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	r.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[r.ci],
 				FontSize: chartLabelFontSize,
@@ -77,7 +77,6 @@ func (r rsi) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridIndex
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[r.ci],

@@ -1,6 +1,3 @@
-package templates
-
-var PageTpl = `
 {{- define "page" }}
 <!DOCTYPE html>
 <html>
@@ -21,23 +18,30 @@ var PageTpl = `
 <div id="page_center" style="grid-column-start:2;grid-column-end:3;grid-row-start:2;grid-row-end:3;">
 
 {{ if eq .ChartArea "none" }}
-	<div style="widht:auto">
-    	{{- range .Charts }} {{ template "base" . }} {{- end }}
-	</div>
+    <div style="widht:auto">
+        {{- range .Charts }} {{ template "base" . }} {{- end }}
+    </div>
 {{ end }}
 
 {{ if eq .ChartArea "center" }}
 	<style> .container {display: flex;justify-content: center;align-items: center;} .item {margin: auto;} </style>
 	<div style="widht:auto">
-    	{{- range .Charts }} {{ template "base" . }} {{- end }}
-	</div>
+        {{- range .Charts }} {{ template "base" . }} {{- end }}
+    </div>
 {{ end }}
 
 {{ if eq .ChartArea "flex" }}
 	<style> .box { justify-content:center; display:flex; flex-wrap:wrap } </style>
 	<div style="widht:auto">
-		<div class="box"> {{- range .Charts }} {{ template "base" . }} {{- end }} </div>
-	</div>
+        <div class="box"> {{- range .Charts }} {{ template "base" . }} {{- end }} </div>
+    </div>
+{{ end }}
+
+{{ if eq .ChartArea "full" }}
+    <style> .container {height: 100vh;} .item {margin: auto;} </style>
+    <div style="widht:auto">
+        {{- range .Charts }} {{ template "base" . }} {{- end }}
+    </div>
 {{ end }}
 
 </div>
@@ -55,4 +59,3 @@ var PageTpl = `
 </body>
 </html>
 {{ end }}
-`

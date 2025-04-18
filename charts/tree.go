@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Tree represents a Tree chart.
@@ -12,7 +12,7 @@ type Tree struct {
 }
 
 // Type returns the chart type.
-func (Tree) Type() string { return types.ChartTree }
+func (*Tree) Type() string { return types.ChartTree }
 
 // NewTree creates a new Tree chart instance.
 func NewTree() *Tree {
@@ -22,14 +22,15 @@ func NewTree() *Tree {
 	return c
 }
 
+// AddSeries adds new data sets.
 func (c *Tree) AddSeries(name string, data []opts.TreeData, options ...SeriesOpts) *Tree {
 	series := SingleSeries{Name: name, Type: types.ChartTree, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
 
-// SetGlobalOptions sets options for the Graph instance.
+// SetGlobalOptions sets options for the Tree instance.
 func (c *Tree) SetGlobalOptions(options ...GlobalOpts) *Tree {
 	c.BaseConfiguration.setBaseGlobalOptions(options...)
 	return c

@@ -1,6 +1,3 @@
-package templates
-
-var HeaderTpl = `
 {{ define "header" }}
 <head>
     <meta charset="utf-8">
@@ -17,6 +14,8 @@ var HeaderTpl = `
 {{- range .CustomizedCSSAssets.Values }}
     <link href="{{ . }}" rel="stylesheet">
 {{- end }}
+{{- range .CustomizedHeaders.Values }}
+    {{ . | safeHTML }}
+{{- end }}
 </head>
 {{ end }}
-`

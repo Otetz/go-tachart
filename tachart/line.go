@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type line struct {
@@ -93,7 +93,6 @@ func (b line) genChart(_, _, _, _, _ []float64, xAxis interface{}, gridIndex int
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[b.ci],
@@ -123,7 +122,6 @@ func (b line) genChart(_, _, _, _, _ []float64, xAxis interface{}, gridIndex int
 					Symbol:     "none",
 					XAxisIndex: gridIndex,
 					YAxisIndex: gridIndex,
-					ZLevel:     100,
 				}),
 				charts.WithLineStyleOpts(opts.LineStyle{
 					Color:   colors[b.ci+i],

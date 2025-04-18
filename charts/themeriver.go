@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // ThemeRiver represents a theme river chart.
@@ -12,7 +12,7 @@ type ThemeRiver struct {
 }
 
 // Type returns the chart type.
-func (ThemeRiver) Type() string { return types.ChartThemeRiver }
+func (*ThemeRiver) Type() string { return types.ChartThemeRiver }
 
 // NewThemeRiver creates a new theme river chart.
 func NewThemeRiver() *ThemeRiver {
@@ -30,7 +30,7 @@ func (c *ThemeRiver) AddSeries(name string, data []opts.ThemeRiverData, options 
 		cd[i] = data[i].ToList()
 	}
 	series := SingleSeries{Name: name, Type: types.ChartThemeRiver, Data: cd}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -41,7 +41,7 @@ func (c *ThemeRiver) SetGlobalOptions(options ...GlobalOpts) *ThemeRiver {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *ThemeRiver) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

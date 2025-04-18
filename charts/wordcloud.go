@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // WordCloud represents a word cloud chart.
@@ -12,7 +12,7 @@ type WordCloud struct {
 }
 
 // Type returns the chart type.
-func (WordCloud) Type() string { return types.ChartWordCloud }
+func (*WordCloud) Type() string { return types.ChartWordCloud }
 
 var wcTextColor = `function () {
 	return 'rgb(' + [
@@ -26,6 +26,7 @@ func NewWordCloud() *WordCloud {
 	c := &WordCloud{}
 	c.initBaseConfiguration()
 	c.Renderer = render.NewChartRender(c, c.Validate)
+	c.JSAssets.Add(opts.CompatibleEchartsJS)
 	c.JSAssets.Add("echarts-wordcloud.min.js")
 	return c
 }
@@ -33,14 +34,14 @@ func NewWordCloud() *WordCloud {
 // AddSeries adds new data sets.
 func (c *WordCloud) AddSeries(name string, data []opts.WordCloudData, options ...SeriesOpts) *WordCloud {
 	series := SingleSeries{Name: name, Type: types.ChartWordCloud, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 
 	// set default random color for WordCloud chart
 	if series.TextStyle == nil {
 		series.TextStyle = &opts.TextStyle{Normal: &opts.TextStyle{}}
 	}
 	if series.TextStyle.Normal.Color == "" {
-		series.TextStyle.Normal.Color = opts.FuncOpts(wcTextColor)
+		series.TextStyle.Normal.Color = string(opts.FuncOpts(wcTextColor))
 	}
 
 	c.MultiSeries = append(c.MultiSeries, series)
@@ -53,7 +54,7 @@ func (c *WordCloud) SetGlobalOptions(options ...GlobalOpts) *WordCloud {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *WordCloud) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

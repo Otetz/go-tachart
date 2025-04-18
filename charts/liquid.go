@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Liquid represents a liquid chart.
@@ -12,13 +12,14 @@ type Liquid struct {
 }
 
 // Type returns the chart type.
-func (Liquid) Type() string { return types.ChartLiquid }
+func (*Liquid) Type() string { return types.ChartLiquid }
 
 // NewLiquid creates a new liquid chart.
 func NewLiquid() *Liquid {
 	c := &Liquid{}
 	c.initBaseConfiguration()
 	c.Renderer = render.NewChartRender(c, c.Validate)
+	c.JSAssets.Add(opts.CompatibleEchartsJS)
 	c.JSAssets.Add("echarts-liquidfill.min.js")
 	return c
 }
@@ -26,7 +27,7 @@ func NewLiquid() *Liquid {
 // AddSeries adds new data sets.
 func (c *Liquid) AddSeries(name string, data []opts.LiquidData, options ...SeriesOpts) *Liquid {
 	series := SingleSeries{Name: name, Type: types.ChartLiquid, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -37,7 +38,7 @@ func (c *Liquid) SetGlobalOptions(options ...GlobalOpts) *Liquid {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Liquid) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

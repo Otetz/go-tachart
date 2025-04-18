@@ -1,10 +1,10 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/datasets"
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/datasets"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Map represents a map chart.
@@ -15,7 +15,7 @@ type Map struct {
 }
 
 // Type returns the chart type.
-func (Map) Type() string { return types.ChartMap }
+func (*Map) Type() string { return types.ChartMap }
 
 // NewMap creates a new map chart.
 func NewMap() *Map {
@@ -25,16 +25,19 @@ func NewMap() *Map {
 	return c
 }
 
-// RegisterMapType
+// RegisterMapType registers the given mapType.
 func (c *Map) RegisterMapType(mapType string) {
 	c.mapType = mapType
-	c.JSAssets.Add("maps/" + datasets.MapFileNames[mapType] + ".js")
+	mapFile, preset := datasets.PresetMapFileNames[mapType]
+	if preset {
+		c.JSAssets.Add("maps/" + mapFile + ".js")
+	}
 }
 
 // AddSeries adds new data sets.
 func (c *Map) AddSeries(name string, data []opts.MapData, options ...SeriesOpts) *Map {
 	series := SingleSeries{Name: name, Type: types.ChartMap, MapType: c.mapType, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -45,7 +48,7 @@ func (c *Map) SetGlobalOptions(options ...GlobalOpts) *Map {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Map) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

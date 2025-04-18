@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Sunburst represents a sunburst chart.
@@ -12,7 +12,7 @@ type Sunburst struct {
 }
 
 // Type returns the chart type.
-func (Sunburst) Type() string { return types.ChartSunburst }
+func (*Sunburst) Type() string { return types.ChartSunburst }
 
 // NewSunburst creates a new sunburst chart instance.
 func NewSunburst() *Sunburst {
@@ -25,7 +25,7 @@ func NewSunburst() *Sunburst {
 // AddSeries adds new data sets.
 func (c *Sunburst) AddSeries(name string, data []opts.SunBurstData, options ...SeriesOpts) *Sunburst {
 	series := SingleSeries{Name: name, Type: types.ChartSunburst, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }

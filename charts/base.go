@@ -3,25 +3,34 @@ package charts
 import (
 	"bytes"
 	"encoding/json"
+	"html/template"
 
-	"github.com/iamjinlei/go-tachart/datasets"
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
+	"github.com/otetz/go-tachart/datasets"
+	"github.com/otetz/go-tachart/event"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
+	"github.com/otetz/go-tachart/util"
 )
+
+var defaultConfigurationVisitor ConfigurationVisitor = BaseConfigurationVisitor{}
 
 // GlobalOpts sets the Global options for charts.
 type GlobalOpts func(bc *BaseConfiguration)
 
 // BaseConfiguration represents an option set needed by all chart types.
 type BaseConfiguration struct {
-	opts.Legend     `json:"legend"`
-	opts.Tooltip    `json:"tooltip"`
-	AxisPointer     *opts.AxisPointer `json:"axisPointer,omitempty"`
-	opts.Toolbox    `json:"toolbox"`
-	Title           []opts.Title `json:"title"`
-	opts.Polar      `json:"polar"`
-	opts.AngleAxis  `json:"angleAxis"`
-	opts.RadiusAxis `json:"radiusAxis"`
+	opts.Legend       `json:"legend"`
+	opts.Tooltip      `json:"tooltip"`
+	opts.Toolbox      `json:"toolbox"`
+	Title             []opts.Title `json:"title"`
+	opts.Polar        `json:"polar"`
+	opts.AngleAxis    `json:"angleAxis"`
+	opts.RadiusAxis   `json:"radiusAxis"`
+	opts.Brush        `json:"brush"`
+	*opts.AxisPointer `json:"axisPointer"`
+	*opts.Aria        `json:"aria"`
+	Calendar          []*opts.Calendar `json:"calendar"`
 
 	render.Renderer        `json:"-"`
 	opts.Initialization    `json:"-"`
@@ -39,17 +48,40 @@ type BaseConfiguration struct {
 	opts.YAxis3D
 	opts.ZAxis3D
 	opts.Grid3D
+	opts.Grid
 
 	legends []string
 	// Colors is the color list of palette.
 	// If no color is set in series, the colors would be adopted sequentially and circularly
 	// from this list as the colors of series.
-	Colors      []string
-	appendColor []string // append customize color to the Colors(reverse order)
+	Colors []string
 
-	GridList      []opts.Grid      `json:"grid,omitempty"`
+	// Animation configs
+	// Animation whether enable the animation, default true
+	Animation          types.Bool `json:"animation,omitempty"`
+	AnimationThreshold types.Int  `json:"animationThreshold,omitempty"`
+	// AnimationDuration defined as types.FuncStr for more flexibilities, so are other related options
+	AnimationDuration       types.FuncStr `json:"animationDuration,omitempty"`
+	AnimationEasing         string        `json:"animationEasing,omitempty"`
+	AnimationDelay          types.FuncStr `json:"animationDelay,omitempty"`
+	AnimationDurationUpdate types.FuncStr `json:"animationDurationUpdate,omitempty"`
+	AnimationEasingUpdate   string        `json:"animationEasingUpdate,omitempty"`
+	AnimationDelayUpdate    types.FuncStr `json:"animationDelayUpdate,omitempty"`
+
+	//Progressive specifies the amount of graphic elements that can be rendered within a frame (about 16ms) if "progressive rendering" enabled.
+	//By default, progressive is auto-enabled when data amount is bigger than progressiveThreshold
+	Progressive types.Int `json:"progressive,omitempty"`
+	//ProgressiveThreshold number If current data amount is over the threshold, "progressive rendering" is enabled, default 3000
+	ProgressiveThreshold types.Int `json:"progressiveThreshold,omitempty"`
+
+	// Array of datasets, managed by AddDataset()
+	DatasetList []opts.Dataset `json:"dataset,omitempty"`
+
 	DataZoomList  []opts.DataZoom  `json:"datazoom,omitempty"`
 	VisualMapList []opts.VisualMap `json:"visualmap,omitempty"`
+
+	EventListeners       []event.Listener `json:"-"`
+	configurationVisitor ConfigurationVisitor
 
 	// ParallelAxisList represents the component list which is the coordinate axis for parallel coordinate.
 	ParallelAxisList []opts.ParallelAxis
@@ -61,15 +93,13 @@ type BaseConfiguration struct {
 	hasParallel   bool
 	hasSingleAxis bool
 	hasPolar      bool
+	hasBrush      bool
+
+	GridList []opts.Grid `json:"grid,omitempty"`
 }
 
-// Note(lei): formatter function is not working with html escaping turned on
-func (bc *BaseConfiguration) NoEscapeJSON() string {
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-	enc.Encode(bc.JSON())
-	return string(buf.Bytes())
+func (bc *BaseConfiguration) Accept(visitor ConfigurationVisitor) {
+	bc.configurationVisitor = visitor
 }
 
 // JSON wraps all the options to a map so that it could be used in the base template
@@ -77,82 +107,142 @@ func (bc *BaseConfiguration) NoEscapeJSON() string {
 // Get data in bytes
 // bs, _ : = json.Marshal(bar.JSON())
 func (bc *BaseConfiguration) JSON() map[string]interface{} {
-	obj := map[string]interface{}{
-		"title":   bc.Title,
-		"legend":  bc.Legend,
-		"tooltip": bc.Tooltip,
-		"series":  bc.MultiSeries,
+	return bc.json()
+}
+
+// JSONNotEscaped works like method JSON, but it returns a marshaled object whose characters will not be escaped in the template
+func (bc *BaseConfiguration) JSONNotEscaped() template.HTML {
+	obj := bc.json()
+	buff := bytes.NewBufferString("")
+	enc := json.NewEncoder(buff)
+	enc.SetEscapeHTML(false)
+	_ = enc.Encode(obj)
+
+	return template.HTML(buff.String())
+}
+
+func (bc *BaseConfiguration) json() map[string]interface{} {
+	visitor := defaultConfigurationVisitor
+	if bc.configurationVisitor != nil {
+		visitor = bc.configurationVisitor
 	}
 
+	obj := map[string]interface{}{
+		"title":   visitor.VisitTitleOpt(bc.Title),
+		"legend":  visitor.VisitLegendOpt(bc.Legend),
+		"tooltip": visitor.VisitTooltipOpt(bc.Tooltip),
+		"series":  visitor.VisitSeriesOpt(bc.MultiSeries),
+	}
+
+	if bc.Animation != nil {
+		obj["animation"] = bc.Animation
+	}
+
+	if bc.Progressive != nil {
+		obj["progressive"] = bc.Animation
+
+	}
+
+	if bc.ProgressiveThreshold != nil {
+		obj["progressiveThreshold"] = bc.ProgressiveThreshold
+	}
+
+	// if only one item, use it directly instead of an Array
+	if len(bc.DatasetList) == 1 {
+		obj["dataset"] = visitor.VisitDatasets(bc.DatasetList[0])
+	} else if len(bc.DatasetList) > 1 {
+		obj["dataset"] = visitor.VisitDatasets(bc.DatasetList...)
+	}
 	if bc.AxisPointer != nil {
-		obj["axisPointer"] = bc.AxisPointer
+		obj["axisPointer"] = visitor.VisitAxisPointer(bc.AxisPointer)
+	}
+
+	if bc.Aria != nil {
+		obj["aria"] = visitor.VisitAria(bc.Aria)
 	}
 
 	if bc.hasPolar {
-		obj["polar"] = bc.Polar
-		obj["angleAxis"] = bc.AngleAxis
-		obj["radiusAxis"] = bc.RadiusAxis
+		obj["polar"] = visitor.VisitPolar(bc.Polar)
+		obj["angleAxis"] = visitor.VisitAngleAxis(bc.AngleAxis)
+		obj["radiusAxis"] = visitor.VisitRadiusAxis(bc.RadiusAxis)
 	}
 
 	if bc.hasGeo {
-		obj["geo"] = bc.GeoComponent
+		obj["geo"] = visitor.VisitGeo(bc.GeoComponent)
 	}
 
 	if bc.hasRadar {
-		obj["radar"] = bc.RadarComponent
+		obj["radar"] = visitor.VisitRadar(bc.RadarComponent)
 	}
 
 	if bc.hasParallel {
-		obj["parallel"] = bc.ParallelComponent
-		obj["parallelAxis"] = bc.ParallelAxisList
+		obj["parallel"] = visitor.VisitParallel(bc.ParallelComponent)
+		obj["parallelAxis"] = visitor.VisitParallelAxis(bc.ParallelAxisList)
 	}
 
 	if bc.hasSingleAxis {
-		obj["singleAxis"] = bc.SingleAxis
+		obj["singleAxis"] = visitor.VisitSingleAxis(bc.SingleAxis)
 	}
 
-	if bc.Toolbox.Show {
-		obj["toolbox"] = bc.Toolbox
-	}
-
-	if len(bc.GridList) > 0 {
-		obj["grid"] = bc.GridList
-	}
+	obj["toolbox"] = visitor.VisitToolbox(bc.Toolbox)
 
 	if len(bc.DataZoomList) > 0 {
-		obj["dataZoom"] = bc.DataZoomList
+		obj["dataZoom"] = visitor.VisitDataZooms(bc.DataZoomList)
 	}
 
 	if len(bc.VisualMapList) > 0 {
-		obj["visualMap"] = bc.VisualMapList
+		obj["visualMap"] = visitor.VisitVisualMaps(bc.VisualMapList)
 	}
 
 	if bc.hasXYAxis {
-		obj["xAxis"] = bc.XAxisList
-		obj["yAxis"] = bc.YAxisList
+		obj["xAxis"] = visitor.VisitXAxis(bc.XAxisList)
+		obj["yAxis"] = visitor.VisitYAxis(bc.YAxisList)
 	}
 
 	if bc.has3DAxis {
-		obj["xAxis3D"] = bc.XAxis3D
-		obj["yAxis3D"] = bc.YAxis3D
-		obj["zAxis3D"] = bc.ZAxis3D
-		obj["grid3D"] = bc.Grid3D
+		obj["xAxis3D"] = visitor.VisitXAxis3D(bc.XAxis3D)
+		obj["yAxis3D"] = visitor.VisitYAxis3D(bc.YAxis3D)
+		obj["zAxis3D"] = visitor.VisitZAxis3D(bc.ZAxis3D)
+		obj["grid3D"] = visitor.VisitGrid3D(bc.Grid3D)
 	}
 
 	if bc.Theme == "white" {
 		obj["color"] = bc.Colors
 	}
 
-	if bc.BackgroundColor != "" {
-		obj["backgroundColor"] = bc.BackgroundColor
+	if bc.Initialization.BackgroundColor != "" {
+		obj["backgroundColor"] = bc.Initialization.BackgroundColor
 	}
 
+	if len(bc.GridList) > 0 {
+		obj["grid"] = visitor.VisitGrid(bc.GridList)
+	}
+
+	if bc.hasBrush {
+		obj["brush"] = visitor.VisitBrush(bc.Brush)
+	}
+
+	if bc.Calendar != nil {
+		obj["calendar"] = visitor.VisitCalendar(bc.Calendar)
+	}
+
+	visitor.Visit(obj)
 	return obj
 }
 
-// GetAssets returns the Assets options
+// GetAssets returns the Assets options.
 func (bc *BaseConfiguration) GetAssets() opts.Assets {
 	return bc.Assets
+}
+
+// AddDataset adds a Dataset to this chart
+func (bc *BaseConfiguration) AddDataset(dataset ...opts.Dataset) {
+	bc.DatasetList = append(bc.DatasetList, dataset...)
+}
+
+// FillDefaultValues fill default values for chart options.
+func (bc *BaseConfiguration) FillDefaultValues() {
+	util.SetDefaultValue(bc)
 }
 
 func (bc *BaseConfiguration) initBaseConfiguration() {
@@ -160,6 +250,7 @@ func (bc *BaseConfiguration) initBaseConfiguration() {
 	bc.InitAssets()
 	bc.initXYAxis()
 	bc.Initialization.Validate()
+	bc.FillDefaultValues()
 }
 
 func (bc *BaseConfiguration) initSeriesColors() {
@@ -184,70 +275,100 @@ func (bc *BaseConfiguration) setBaseGlobalOptions(opts ...GlobalOpts) {
 	}
 }
 
-// WithPolarOps set angleAxis
+// WithAngleAxisOps sets the angle of the axis.
 func WithAngleAxisOps(opt opts.AngleAxis) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.AngleAxis = opt
 	}
 }
 
-// WithPolarOps set radiusAxis
+// WithRadiusAxisOps sets the radius of the axis.
 func WithRadiusAxisOps(opt opts.RadiusAxis) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.RadiusAxis = opt
 	}
 }
 
-// WithPolarOps set polar
-func WithPolarOps(opt opts.Polar) GlobalOpts {
+// WithBrush sets the Brush.
+func WithBrush(opt opts.Brush) GlobalOpts {
 	return func(bc *BaseConfiguration) {
-		bc.Polar = opt
+		bc.hasBrush = true
+		bc.Brush = opt
 	}
 }
 
-// WithTitleOpts
+// WithPolarOps sets the polar.
+func WithPolarOps(opt opts.Polar) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.Polar = opt
+		bc.hasPolar = true
+		bc.hasXYAxis = false
+	}
+}
+
+// WithTitleOpts sets the title.
 func WithTitleOpts(opt ...opts.Title) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Title = append(bc.Title, opt...)
 	}
 }
 
-// WithAxisPointerOps
-func WithAxisPointerOpts(opt opts.AxisPointer) GlobalOpts {
+// WithAnimation enable or disable the animation.
+func WithAnimation(enable bool) GlobalOpts {
 	return func(bc *BaseConfiguration) {
-		bc.AxisPointer = &opt
+		bc.Animation = opts.Bool(enable)
 	}
 }
 
-// WithToolboxOpts
+// WithProgressive allows to set amount of graphic elements rendered in a frame
+func WithProgressive(opt int) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.Progressive = opts.Int(opt)
+	}
+}
+
+// WithProgressiveThreshold Allows to set treshold for progressive rendering
+func WithProgressiveThreshold(opt int) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.ProgressiveThreshold = opts.Int(opt)
+	}
+}
+
+// WithToolboxOpts sets the toolbox.
 func WithToolboxOpts(opt opts.Toolbox) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Toolbox = opt
 	}
 }
 
-// WithSingleAxisOpts
+// WithSingleAxisOpts sets the single axis.
 func WithSingleAxisOpts(opt opts.SingleAxis) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.SingleAxis = opt
 	}
 }
 
-// WithTooltipOpts
+// WithTooltipOpts sets the tooltip.
 func WithTooltipOpts(opt opts.Tooltip) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Tooltip = opt
 	}
 }
 
-// WithLegendOpts
+// WithLegendOpts sets the legend.
 func WithLegendOpts(opt opts.Legend) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Legend = opt
 	}
 }
 
-// WithInitializationOpts
+func WithEventListeners(listeners ...event.Listener) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.EventListeners = append(bc.EventListeners, listeners...)
+	}
+}
+
+// WithInitializationOpts sets the initialization.
 func WithInitializationOpts(opt opts.Initialization) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.Initialization = opt
@@ -260,68 +381,83 @@ func WithInitializationOpts(opt opts.Initialization) GlobalOpts {
 	}
 }
 
-// WithGridOpts
-func WithGridOpts(opt ...opts.Grid) GlobalOpts {
-	return func(bc *BaseConfiguration) {
-		bc.GridList = append(bc.GridList, opt...)
-	}
-}
-
-// WithDataZoomOpts
+// WithDataZoomOpts sets the list of the zoom data.
 func WithDataZoomOpts(opt ...opts.DataZoom) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.DataZoomList = append(bc.DataZoomList, opt...)
 	}
 }
 
-// WithVisualMapOpts
+// WithVisualMapOpts sets the List of the visual map.
 func WithVisualMapOpts(opt ...opts.VisualMap) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.VisualMapList = append(bc.VisualMapList, opt...)
 	}
 }
 
-// WithRadarComponentOpts
+// WithRadarComponentOpts sets the component of the radar.
 func WithRadarComponentOpts(opt opts.RadarComponent) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.RadarComponent = opt
 	}
 }
 
-// WithGeoComponentOpts
+// WithGeoComponentOpts sets the geo component.
 func WithGeoComponentOpts(opt opts.GeoComponent) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.GeoComponent = opt
-		bc.JSAssets.Add("maps/" + datasets.MapFileNames[opt.Map] + ".js")
+		mapFile, preset := datasets.PresetMapFileNames[opt.Map]
+		if preset {
+			bc.JSAssets.Add("maps/" + mapFile + ".js")
+		}
 	}
-
 }
 
-// WithParallelComponentOpts
+// WithParallelComponentOpts sets the parallel component.
 func WithParallelComponentOpts(opt opts.ParallelComponent) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.ParallelComponent = opt
 	}
 }
 
-// WithParallelAxisList
+// WithParallelAxisList sets the list of the parallel axis.
 func WithParallelAxisList(opt []opts.ParallelAxis) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.ParallelAxisList = opt
 	}
 }
 
-// WithColorsOpts
+// WithColorsOpts sets the color.
 func WithColorsOpts(opt opts.Colors) GlobalOpts {
 	return func(bc *BaseConfiguration) {
 		bc.insertSeriesColors(opt)
 	}
 }
 
-// reverseSlice reverse string slice
+// reverseSlice reverses the string slice.
 func reverseSlice(s []string) []string {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
 	return s
+}
+
+// WithGridOpts sets the List of the grid.
+func WithGridOpts(opt ...opts.Grid) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.GridList = append(bc.GridList, opt...)
+	}
+}
+
+// WithAxisPointerOpts sets the axis pointer.
+func WithAxisPointerOpts(opt *opts.AxisPointer) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.AxisPointer = opt
+	}
+}
+
+func WithAriaOpts(opt *opts.Aria) GlobalOpts {
+	return func(bc *BaseConfiguration) {
+		bc.Aria = opt
+	}
 }

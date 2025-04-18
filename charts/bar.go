@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Bar represents a bar chart.
@@ -14,7 +14,7 @@ type Bar struct {
 }
 
 // Type returns the chart type.
-func (Bar) Type() string { return types.ChartBar }
+func (*Bar) Type() string { return types.ChartBar }
 
 // NewBar creates a new bar chart instance.
 func NewBar() *Bar {
@@ -25,7 +25,7 @@ func NewBar() *Bar {
 	return c
 }
 
-// EnablePolarType enable polar bar
+// EnablePolarType enables the polar bar.
 func (c *Bar) EnablePolarType() *Bar {
 	c.hasXYAxis = false
 	c.hasPolar = true
@@ -41,7 +41,7 @@ func (c *Bar) SetXAxis(x interface{}) *Bar {
 // AddSeries adds the new series.
 func (c *Bar) AddSeries(name string, data []opts.BarData, options ...SeriesOpts) *Bar {
 	series := SingleSeries{Name: name, Type: types.ChartBar, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }

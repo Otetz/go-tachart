@@ -5,8 +5,8 @@ import (
 
 	"github.com/iamjinlei/go-tart"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type ma struct {
@@ -55,7 +55,7 @@ func (c ma) getNumColors() int {
 func (c *ma) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	c.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[c.ci],
 				FontSize: chartLabelFontSize,
@@ -85,7 +85,6 @@ func (c ma) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridIndex 
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[c.ci],

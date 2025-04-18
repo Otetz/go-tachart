@@ -3,10 +3,10 @@ package charts
 import (
 	"log"
 
-	"github.com/iamjinlei/go-tachart/datasets"
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/datasets"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Geo represents a geo chart.
@@ -15,7 +15,7 @@ type Geo struct {
 }
 
 // Type returns the chart type.
-func (Geo) Type() string { return types.ChartGeo }
+func (*Geo) Type() string { return types.ChartGeo }
 
 var geoFormatter = `function (params) {
 		return params.name + ' : ' + params.value[2];
@@ -37,7 +37,7 @@ func NewGeo() *Geo {
 // * types.ChartHeatMap
 func (c *Geo) AddSeries(name, geoType string, data []opts.GeoData, options ...SeriesOpts) *Geo {
 	series := SingleSeries{Name: name, Type: geoType, Data: data, CoordSystem: types.ChartGeo}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -59,7 +59,7 @@ func (c *Geo) SetGlobalOptions(options ...GlobalOpts) *Geo {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Geo) Validate() {
 	if c.Tooltip.Formatter == "" {
 		c.Tooltip.Formatter = opts.FuncOpts(geoFormatter)

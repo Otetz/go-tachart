@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Sankey represents a sankey chart.
@@ -12,7 +12,7 @@ type Sankey struct {
 }
 
 // Type returns the chart type.
-func (Sankey) Type() string { return types.ChartSankey }
+func (*Sankey) Type() string { return types.ChartSankey }
 
 // NewSankey creates a new sankey chart.
 func NewSankey() *Sankey {
@@ -25,7 +25,7 @@ func NewSankey() *Sankey {
 // AddSeries adds new data sets.
 func (c *Sankey) AddSeries(name string, nodes []opts.SankeyNode, links []opts.SankeyLink, options ...SeriesOpts) *Sankey {
 	series := SingleSeries{Name: name, Type: types.ChartSankey, Data: nodes, Links: links}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -36,7 +36,7 @@ func (c *Sankey) SetGlobalOptions(options ...GlobalOpts) *Sankey {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Sankey) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

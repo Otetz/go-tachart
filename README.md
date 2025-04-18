@@ -18,7 +18,7 @@
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="MIT License">
     </a>
-    <a href="https://pkg.go.dev/github.com/go-echarts/go-echarts/v2">
+    <a href="https://pkg.go.dev/github.com/otetz/go-tachart">
         <img src="https://godoc.org/github.com/go-echarts/go-echarts?status.svg" alt="GoDoc">
     </a>
 </p>
@@ -48,7 +48,7 @@ In this example, a simple chart is created with a few lines of code. A complete 
 package main
 
 import (
-	"github.com/iamjinlei/go-tachart/tachart"
+	"github.com/otetz/go-tachart/tachart"
 )
 
 func main() {

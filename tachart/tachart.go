@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/components"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/components"
+	"github.com/otetz/go-tachart/opts"
 )
 
 const (
@@ -134,13 +134,13 @@ func New(cfg Config) *TAChart {
 	eventChartH := 10
 
 	grids := []opts.Grid{
-		opts.Grid{ // candlestick + overlay
+		{ // candlestick + overlay
 			Left:   px(left),
 			Right:  px(right),
 			Top:    px(cdlChartTop),
 			Height: px(h * 2),
 		},
-		opts.Grid{ // event
+		{ // event
 			Left:   px(left),
 			Right:  px(right),
 			Top:    px(eventChartTop),
@@ -148,13 +148,13 @@ func New(cfg Config) *TAChart {
 		},
 	}
 	gridLayouts := []gridLayout{
-		gridLayout{
+		{
 			top:  cdlChartTop,
 			left: left,
 			w:    right - left,
 			h:    h * 2,
 		},
-		gridLayout{
+		{
 			top:  eventChartTop,
 			left: left,
 			w:    right - left,
@@ -163,14 +163,14 @@ func New(cfg Config) *TAChart {
 	}
 	xAxisIndex := []int{0, 1}
 	extendedXAxis := []opts.XAxis{
-		opts.XAxis{ // event
-			Show:      false,
+		{ // event
+			Show:      opts.Bool(false),
 			GridIndex: 1,
 		},
 	}
 	extendedYAxis := []opts.YAxis{
-		opts.YAxis{ // event
-			Show:      false,
+		{ // event
+			Show:      opts.Bool(false),
 			GridIndex: 1,
 		},
 	}
@@ -197,14 +197,14 @@ func New(cfg Config) *TAChart {
 		xAxisIndex = append(xAxisIndex, gridIndex)
 
 		extendedXAxis = append(extendedXAxis, opts.XAxis{
-			Show:        true,
+			Show:        opts.Bool(true),
 			GridIndex:   gridIndex,
 			SplitNumber: 20,
 			AxisTick: &opts.AxisTick{
-				Show: false,
+				Show: opts.Bool(false),
 			},
 			AxisLabel: &opts.AxisLabel{
-				Show: false,
+				Show: opts.Bool(false),
 			},
 		})
 		// TODO: make this configurable
@@ -231,17 +231,17 @@ func New(cfg Config) *TAChart {
 		}
 
 		extendedYAxis = append(extendedYAxis, opts.YAxis{
-			Show:        true,
+			Show:        opts.Bool(true),
 			GridIndex:   gridIndex,
-			Scale:       true,
+			Scale:       opts.Bool(true),
 			SplitNumber: 2,
 			SplitLine: &opts.SplitLine{
-				Show: true,
+				Show: opts.Bool(true),
 			},
 			AxisLabel: &opts.AxisLabel{
-				Show:         true,
-				ShowMinLabel: true,
-				ShowMaxLabel: true,
+				Show:         opts.Bool(true),
+				ShowMinLabel: opts.Bool(true),
+				ShowMaxLabel: opts.Bool(true),
 				Formatter:    opts.FuncOpts(indYLabelFormatterFunc),
 			},
 			Min: opts.FuncOpts(min),
@@ -257,7 +257,7 @@ func New(cfg Config) *TAChart {
 			AssetsHost: cfg.assetsHost,
 		},
 		tooltip: opts.Tooltip{
-			Show:      true,
+			Show:      opts.Bool(true),
 			Trigger:   "axis",
 			TriggerOn: "mousemove|click",
 			Position:  opts.FuncOpts(tooltipPositionFunc),
@@ -265,35 +265,37 @@ func New(cfg Config) *TAChart {
 		},
 		axisPointer: opts.AxisPointer{
 			Type: "line",
-			Snap: true,
-			Link: opts.AxisPointerLink{
-				XAxisIndex: "all",
+			Snap: opts.Bool(true),
+			Link: []opts.AxisPointerLink{
+				{
+					XAxisName: "all",
+				},
 			},
 		},
 		grids: grids,
 		xAxis: opts.XAxis{ // candlestick+overlay
-			Show:        true,
+			Show:        opts.Bool(true),
 			GridIndex:   0,
 			SplitNumber: 20,
 		},
 		yAxis: opts.YAxis{ // candlestick+overlay
-			Show:      true,
+			Show:      opts.Bool(true),
 			GridIndex: 0,
-			Scale:     true,
+			Scale:     opts.Bool(true),
 			SplitArea: &opts.SplitArea{
-				Show: true,
+				Show: opts.Bool(true),
 			},
 			Min: opts.FuncOpts(minRoundFunc),
 			Max: opts.FuncOpts(maxRoundFunc),
 			AxisLabel: &opts.AxisLabel{
-				Show:         true,
-				ShowMinLabel: true,
-				ShowMaxLabel: true,
+				Show:         opts.Bool(true),
+				ShowMinLabel: opts.Bool(true),
+				ShowMaxLabel: opts.Bool(true),
 				Formatter:    opts.FuncOpts(yLabelFormatterFunc),
 			},
 		},
 		dataZooms: []opts.DataZoom{
-			opts.DataZoom{
+			{
 				Type:       "slider",
 				Start:      50,
 				End:        100,
@@ -320,8 +322,8 @@ func New(cfg Config) *TAChart {
 		ci += ol.getNumColors()
 	}
 	for i, ind := range cfg.indicators {
-		layout := gridLayouts[i+2]
-		globalOptsData.titles = append(globalOptsData.titles, ind.getTitleOpts(layout.top-5, layout.left+5, 0)...)
+		indLayout := gridLayouts[i+2]
+		globalOptsData.titles = append(globalOptsData.titles, ind.getTitleOpts(indLayout.top-5, indLayout.left+5, 0)...)
 	}
 	layout = gridLayouts[len(gridLayouts)-1]
 	globalOptsData.titles = append(globalOptsData.titles, opts.Title{
@@ -388,9 +390,7 @@ func (c TAChart) GenStatic(cdls []Candle, events []Event, path string) error {
 	chart := charts.NewKLine().SetXAxis(xAxis).AddSeries("kline",
 		klineSeries,
 		charts.WithKlineChartOpts(opts.KlineChart{
-			BarWidth:   "60%",
-			XAxisIndex: 0,
-			YAxisIndex: 0,
+			BarWidth: "60%",
 		}),
 		charts.WithItemStyleOpts(opts.ItemStyle{
 			Color:        colorUpBar,

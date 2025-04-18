@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/types"
 )
 
 const (
@@ -27,7 +28,7 @@ type globalOptsData struct {
 
 func (c globalOptsData) genOpts(cfg Config, n int, eventDescMap map[string]string) []charts.GlobalOpts {
 	tooltip := c.tooltip
-	tooltip.Formatter = strings.Replace(tooltip.Formatter, "__EVENT_MAP__", toJson(eventDescMap), 1)
+	tooltip.Formatter = types.FuncStr(strings.Replace(string(tooltip.Formatter), "__EVENT_MAP__", toJson(eventDescMap), 1))
 
 	numBars := (cfg.layout.chartWidth - left - right) / defaultCandleBarWidth
 	pct := float32(numBars*100) / float32(n)
@@ -44,7 +45,7 @@ func (c globalOptsData) genOpts(cfg Config, n int, eventDescMap map[string]strin
 		charts.WithTitleOpts(c.titles...),
 		charts.WithInitializationOpts(c.init),
 		charts.WithTooltipOpts(tooltip),
-		charts.WithAxisPointerOpts(c.axisPointer),
+		charts.WithAxisPointerOpts(&c.axisPointer),
 		charts.WithGridOpts(c.grids...),
 		charts.WithXAxisOpts(c.xAxis),
 		charts.WithYAxisOpts(c.yAxis),

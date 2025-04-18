@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Funnel represents a funnel chart.
@@ -12,7 +12,7 @@ type Funnel struct {
 }
 
 // Type returns the chart type.
-func (Funnel) Type() string { return types.ChartFunnel }
+func (*Funnel) Type() string { return types.ChartFunnel }
 
 // NewFunnel creates a new funnel chart.
 func NewFunnel() *Funnel {
@@ -25,7 +25,7 @@ func NewFunnel() *Funnel {
 // AddSeries adds new data sets.
 func (c *Funnel) AddSeries(name string, data []opts.FunnelData, options ...SeriesOpts) *Funnel {
 	series := SingleSeries{Name: name, Type: types.ChartFunnel, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -36,7 +36,7 @@ func (c *Funnel) SetGlobalOptions(options ...GlobalOpts) *Funnel {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Funnel) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Pie represents a pie chart.
@@ -12,7 +12,7 @@ type Pie struct {
 }
 
 // Type returns the chart type.
-func (Pie) Type() string { return types.ChartPie }
+func (*Pie) Type() string { return types.ChartPie }
 
 // NewPie creates a new pie chart.
 func NewPie() *Pie {
@@ -25,7 +25,7 @@ func NewPie() *Pie {
 // AddSeries adds new data sets.
 func (c *Pie) AddSeries(name string, data []opts.PieData, options ...SeriesOpts) *Pie {
 	series := SingleSeries{Name: name, Type: types.ChartPie, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -36,7 +36,7 @@ func (c *Pie) SetGlobalOptions(options ...GlobalOpts) *Pie {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Pie) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }

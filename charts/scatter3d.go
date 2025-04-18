@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Scatter3D represents a 3D scatter chart.
@@ -12,7 +12,7 @@ type Scatter3D struct {
 }
 
 // Type returns the chart type.
-func (Scatter3D) Type() string { return types.ChartScatter3D }
+func (*Scatter3D) Type() string { return types.ChartScatter3D }
 
 // NewScatter3D creates a new 3D scatter chart.
 func NewScatter3D() *Scatter3D {

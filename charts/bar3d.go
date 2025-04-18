@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Bar3D represents a 3D bar chart.
@@ -12,7 +12,7 @@ type Bar3D struct {
 }
 
 // Type returns the chart type.
-func (Bar3D) Type() string { return types.ChartBar3D }
+func (*Bar3D) Type() string { return types.ChartBar3D }
 
 // NewBar3D creates a new 3D bar chart.
 func NewBar3D() *Bar3D {

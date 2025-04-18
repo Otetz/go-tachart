@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type bar struct {
@@ -46,7 +46,7 @@ func (b bar) getNumColors() int {
 func (b *bar) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	b.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[b.ci],
 				FontSize: chartLabelFontSize,
@@ -73,6 +73,5 @@ func (b bar) genChart(_, _, _, _, _ []float64, xAxis interface{}, gridIndex int)
 			BarWidth:   "60%",
 			XAxisIndex: gridIndex,
 			YAxisIndex: gridIndex,
-			ZLevel:     100,
 		}))
 }

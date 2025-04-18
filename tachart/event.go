@@ -3,11 +3,11 @@ package tachart
 import (
 	"fmt"
 
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 const (
-	symbolSize = 16
+	symbolSize = 16.0
 )
 
 type EventType byte
@@ -23,14 +23,14 @@ const (
 type eventStyle struct {
 	label      *opts.Label
 	style      *opts.ItemStyle
-	symbolSize int
+	symbolSize float32
 }
 
 var (
 	eventLabelMap = map[EventType]*eventStyle{
-		Long: &eventStyle{
+		Long: {
 			label: &opts.Label{
-				Show:      true,
+				Show:      opts.Bool(true),
 				Color:     "#FFFFFF",
 				Formatter: fmt.Sprintf("%c", Long),
 			},
@@ -40,9 +40,9 @@ var (
 			},
 			symbolSize: symbolSize,
 		},
-		Short: &eventStyle{
+		Short: {
 			label: &opts.Label{
-				Show:      true,
+				Show:      opts.Bool(true),
 				Color:     "#0000FF",
 				Formatter: fmt.Sprintf("%c", Short),
 			},
@@ -52,9 +52,9 @@ var (
 			},
 			symbolSize: symbolSize,
 		},
-		Open: &eventStyle{
+		Open: {
 			label: &opts.Label{
-				Show:      true,
+				Show:      opts.Bool(true),
 				Color:     "#FFFFFF",
 				Formatter: fmt.Sprintf("%c", Open),
 			},
@@ -64,9 +64,9 @@ var (
 			},
 			symbolSize: symbolSize,
 		},
-		Close: &eventStyle{
+		Close: {
 			label: &opts.Label{
-				Show:      true,
+				Show:      opts.Bool(true),
 				Color:     "#FFFFFF",
 				Formatter: fmt.Sprintf("%c", Close),
 			},
@@ -80,11 +80,11 @@ var (
 )
 
 type EventMark struct {
-	Name        string // mark label string
-	FontColor   string // mark label font color
-	BgColor     string // mark icon color
-	BorderColor string // mark icon border color, default to BgColor if empty
-	SymbolSize  int    // symbol size, use default if 0
+	Name        string  // mark label string
+	FontColor   string  // mark label font color
+	BgColor     string  // mark icon color
+	BorderColor string  // mark icon border color, default to BgColor if empty
+	SymbolSize  float32 // symbol size, use default if 0
 }
 
 func (m EventMark) toEventStyle() *eventStyle {
@@ -95,13 +95,13 @@ func (m EventMark) toEventStyle() *eventStyle {
 		bc = bgc
 	}
 	sz := m.SymbolSize
-	if sz == 0 {
+	if sz == 0.0 {
 		sz = symbolSize
 	}
 
 	return &eventStyle{
 		label: &opts.Label{
-			Show:      true,
+			Show:      opts.Bool(true),
 			Color:     fc,
 			Formatter: m.Name,
 		},

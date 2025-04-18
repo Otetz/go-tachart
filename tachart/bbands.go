@@ -5,8 +5,8 @@ import (
 
 	"github.com/iamjinlei/go-tart"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type bbands struct {
@@ -58,7 +58,7 @@ func (b bbands) getNumColors() int {
 func (b *bbands) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	b.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[b.ci],
 				FontSize: chartLabelFontSize,
@@ -67,7 +67,7 @@ func (b *bbands) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 			Left:  px(left),
 			Top:   px(top),
 		},
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[b.ci+1],
 				FontSize: chartLabelFontSize,
@@ -76,7 +76,7 @@ func (b *bbands) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 			Left:  px(left),
 			Top:   px(top + chartLabelFontHeight),
 		},
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[b.ci+1],
 				FontSize: chartLabelFontSize,
@@ -112,7 +112,6 @@ func (b bbands) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridIn
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[b.ci],
@@ -125,7 +124,6 @@ func (b bbands) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridIn
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[b.ci+1],
@@ -138,7 +136,6 @@ func (b bbands) genChart(_, _, _, closes, _ []float64, xAxis interface{}, gridIn
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[b.ci+1],

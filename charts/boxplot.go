@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // BoxPlot represents a boxplot chart.
@@ -12,7 +12,7 @@ type BoxPlot struct {
 }
 
 // Type returns the chart type.
-func (BoxPlot) Type() string { return types.ChartBoxPlot }
+func (*BoxPlot) Type() string { return types.ChartBoxPlot }
 
 // NewBoxPlot creates a new boxplot chart.
 func NewBoxPlot() *BoxPlot {
@@ -32,7 +32,7 @@ func (c *BoxPlot) SetXAxis(x interface{}) *BoxPlot {
 // AddSeries adds the new series.
 func (c *BoxPlot) AddSeries(name string, data []opts.BoxPlotData, options ...SeriesOpts) *BoxPlot {
 	series := SingleSeries{Name: name, Type: types.ChartBoxPlot, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }

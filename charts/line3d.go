@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Line3D represents a 3D line chart.
@@ -12,7 +12,7 @@ type Line3D struct {
 }
 
 // Type returns the chart type.
-func (Line3D) Type() string { return types.ChartLine3D }
+func (*Line3D) Type() string { return types.ChartLine3D }
 
 // NewLine3D creates a new 3D line chart.
 func NewLine3D() *Line3D {

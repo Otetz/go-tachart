@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Kline represents a kline chart.
@@ -12,7 +12,7 @@ type Kline struct {
 }
 
 // Type returns the chart type.
-func (Kline) Type() string { return types.ChartKline }
+func (*Kline) Type() string { return types.ChartKline }
 
 // NewKLine creates a new kline chart.
 func NewKLine() *Kline {
@@ -32,12 +32,12 @@ func (c *Kline) SetXAxis(xAxis interface{}) *Kline {
 // AddSeries adds the new series.
 func (c *Kline) AddSeries(name string, data []opts.KlineData, options ...SeriesOpts) *Kline {
 	series := SingleSeries{Name: name, Type: types.ChartKline, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Kline) Validate() {
 	c.XAxisList[0].Data = c.xAxisData
 	c.Assets.Validate(c.AssetsHost)

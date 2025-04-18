@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iamjinlei/go-tachart/charts"
-	"github.com/iamjinlei/go-tachart/opts"
+	"github.com/otetz/go-tachart/charts"
+	"github.com/otetz/go-tachart/opts"
 )
 
 type boundedLine struct {
@@ -52,7 +52,7 @@ func (b boundedLine) getNumColors() int {
 func (b *boundedLine) getTitleOpts(top, left int, colorIndex int) []opts.Title {
 	b.ci = colorIndex
 	return []opts.Title{
-		opts.Title{
+		{
 			TitleStyle: &opts.TextStyle{
 				Color:    colors[b.ci],
 				FontSize: chartLabelFontSize,
@@ -77,7 +77,6 @@ func (b boundedLine) genChart(_, _, _, _, _ []float64, xAxis interface{}, gridIn
 				Symbol:     "none",
 				XAxisIndex: gridIndex,
 				YAxisIndex: gridIndex,
-				ZLevel:     100,
 			}),
 			charts.WithLineStyleOpts(opts.LineStyle{
 				Color:   colors[b.ci],

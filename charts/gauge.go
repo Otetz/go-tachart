@@ -1,9 +1,9 @@
 package charts
 
 import (
-	"github.com/iamjinlei/go-tachart/opts"
-	"github.com/iamjinlei/go-tachart/render"
-	"github.com/iamjinlei/go-tachart/types"
+	"github.com/otetz/go-tachart/opts"
+	"github.com/otetz/go-tachart/render"
+	"github.com/otetz/go-tachart/types"
 )
 
 // Gauge represents a gauge chart.
@@ -12,7 +12,7 @@ type Gauge struct {
 }
 
 // Type returns the chart type.
-func (Gauge) Type() string { return types.ChartGauge }
+func (*Gauge) Type() string { return types.ChartGauge }
 
 // NewGauge creates a new gauge chart.
 func NewGauge() *Gauge {
@@ -25,7 +25,7 @@ func NewGauge() *Gauge {
 // AddSeries adds new data sets.
 func (c *Gauge) AddSeries(name string, data []opts.GaugeData, options ...SeriesOpts) *Gauge {
 	series := SingleSeries{Name: name, Type: types.ChartGauge, Data: data}
-	series.configureSeriesOpts(options...)
+	series.ConfigureSeriesOpts(options...)
 	c.MultiSeries = append(c.MultiSeries, series)
 	return c
 }
@@ -36,7 +36,7 @@ func (c *Gauge) SetGlobalOptions(options ...GlobalOpts) *Gauge {
 	return c
 }
 
-// Validate
+// Validate validates the given configuration.
 func (c *Gauge) Validate() {
 	c.Assets.Validate(c.AssetsHost)
 }
